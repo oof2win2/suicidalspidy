@@ -1,0 +1,9 @@
+{
+  "name": "suicidalspidy",
+  "version": "1.0.2",
+  "title": "SuicidalSpidy",
+  "author": "oof2win2",
+  "description": "Adds a Suicidal Spidertron to the game",
+  "dependencies": ["base"],
+  "factorio_version": "1.1"
+}
