@@ -15,7 +15,6 @@ end
 
 ---Gets or makes the target of a spidertron
 ---@param entity LuaEntity
----@return Position|nil
 function lib.get_target(entity)
 	for _, existing_target in pairs(global.spidertron_targets) do
 		if existing_target.owner_unit_number == entity.unit_number then
@@ -29,7 +28,7 @@ function lib.get_target(entity)
 			target.claimed = true
 			target.owner_unit_number = entity.unit_number
 			
-			local spidertron = global.spidertons[entity.unit_number]
+			local spidertron = global.spidertrons[entity.unit_number]
 			spidertron.target = target
 			spidertron.pathing = true
 			
@@ -66,7 +65,7 @@ end
 
 ---Finds a spidertron that doesn't have any target yet
 function lib.find_free_spidy()
-	for _, spidertron in pairs(global.spidertons) do
+	for _, spidertron in pairs(global.spidertrons) do
 		if not spidertron.target then
 			return spidertron
 		end

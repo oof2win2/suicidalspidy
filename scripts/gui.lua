@@ -15,7 +15,7 @@ local function create_gui(player, entity)
 	local target = lib.get_target(entity)
 	content_frame.add{
 		type="minimap",
-		position=target,
+		position=target and target.position,
 		tags={
 			owner=statics.ownertag,
 			unit_number=entity.unit_number,
@@ -68,16 +68,6 @@ local toggle_gui = function(player)
 	end
 end
 
----@param event EventData|on_player_used_capsule
-local function on_player_used_capsule (event)
-	if event.item.name ~= "suicidalspidy-targeting-remote" then return end
-	table.insert(global.spidertron_targets, {
-		position=event.position,
-		player_index=event.player_index,
-	})
-
-end
-
 script.on_event(defines.events.on_gui_opened, function (event)
 	local entity = event.entity
 	if entity == nil or entity.name ~= "spidertron" then return end
@@ -92,7 +82,6 @@ script.on_event(defines.events.on_gui_closed, function (event)
 	local player = game.get_player(event.player_index)
 	toggle_gui(player)
 end)
-script.on_event(defines.events.on_player_used_capsule, on_player_used_capsule)
 
 script.on_init(function ()
 	global = {

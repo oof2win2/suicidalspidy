@@ -45,7 +45,6 @@ end
 --TODO: make this handler work properly
 ---@param e EventData|on_player_used_capsule
 local function on_player_used_capsule(e)
-	game.print("player used capsule")
 	if e.item.name ~= statics.remote_name then return end
 	local target = lib.add_target({
 		position=e.position
