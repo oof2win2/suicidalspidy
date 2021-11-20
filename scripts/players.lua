@@ -1,3 +1,5 @@
+-- use fake characters to shoot, LuaControl.shooting_state applies to them and makes the spidertron shoot
+
 local function on_built_entity (e)
 	local entity = e.created_entity
 	if entity.name ~= "spidertron" then return end
