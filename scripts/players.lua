@@ -1,8 +1,15 @@
+local lib = require "scripts.utils"
+local statics = require "statics"
 -- use fake characters to shoot, LuaControl.shooting_state applies to them and makes the spidertron shoot
 
+---@param e EventData|on_built_entity | EventData|on_robot_built_entity
 local function on_built_entity (e)
 	local entity = e.created_entity
 	if entity.name ~= "spidertron" then return end
+
+	-- add the spidy to the global free spidy list
+	lib.create_spidy(entity)
+
 	local fake_player = entity.surface.create_entity{
 		name="character",
 		force=entity.force,
@@ -20,7 +27,7 @@ local function on_entity_died (e)
 	if entity.name ~= "spidertron" then return end
 
 	-- remove the target to take up less space
-	global.spidertron_targets[entity.unit_number] = nil
+	lib.remove_target(entity)
 	
 	-- make spidertron go kaboom if there is a rocket inside
 	local ammo_inv = entity.get_inventory(defines.inventory.spider_ammo)
@@ -35,6 +42,21 @@ local function on_entity_died (e)
 	end
 end
 
+--TODO: make this handler work properly
+---@param e EventData|on_player_used_capsule
+local function on_player_used_capsule(e)
+	game.print("player used capsule")
+	if e.item.name ~= statics.remote_name then return end
+	local target = lib.add_target({
+		position=e.position
+	})
+
+	local spidy = lib.find_free_spidy()
+	if spidy then
+		lib.set_target(spidy, target)
+	end
+end
+
 script.on_event(defines.events.on_entity_died, on_entity_died, {
 	filter={
 		filter="name",
@@ -43,3 +65,4 @@ script.on_event(defines.events.on_entity_died, on_entity_died, {
 })
 script.on_event(defines.events.on_built_entity, on_built_entity)
 script.on_event(defines.events.on_robot_built_entity, on_built_entity)
+script.on_event(defines.events.on_player_used_capsule, on_player_used_capsule)
