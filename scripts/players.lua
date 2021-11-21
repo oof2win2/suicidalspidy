@@ -16,6 +16,10 @@ local function on_built_entity (e)
 		position=entity.position,
 	}
 	entity.set_driver(fake_player)
+	entity.vehicle_automatic_targeting_parameters = {
+		auto_target_with_gunner = false,
+		auto_target_without_gunner = false,
+	}
 
 	-- insert the one rocket into the inventory
 	local ammo_inv = entity.get_inventory(defines.inventory.spider_ammo)
@@ -67,12 +71,56 @@ local function on_script_path_request_finished(e)
 	end
 
 	-- set the paths
+	local previous_dx = 0
+	local previous_dy = 0
+	local prev_x = req.entity.position.x
+	local prev_y = req.entity.position.y
 	for _, waypoint in pairs(e.path) do
-		req.entity.add_autopilot_destination(waypoint.position)
+		local current_dx = prev_x - waypoint.position.x
+		local current_dy = prev_y - waypoint.position.y
+		-- log(tostring(current_dx) .. " " .. tostring(previous_dx))
+		if current_dx ~= previous_dx or current_dy ~= previous_dy then
+			req.entity.add_autopilot_destination(waypoint.position)
+		end
+		previous_dx = current_dx
+		previous_dy = current_dy
+		prev_x = waypoint.position.x
+		prev_y = waypoint.position.y
 	end
+	req.entity.add_autopilot_destination(e.path[#e.path].position)
+
+	-- add the target's position to the autopilot so it goes exactly to the defined spot
+	local target = lib.get_target(req.entity)
+	req.entity.add_autopilot_destination(target.position)
 
 	-- remove the pathing request from global
 	global.pathing_requests[e.id] = nil
+end
+
+---@param e EventData|on_spider_command_completed
+local function on_spider_command_completed(e)
+	local entity = e.vehicle
+
+	if not global.spidertrons[entity.unit_number] then return end
+
+	if entity.autopilot_destination then return end
+	entity.vehicle_automatic_targeting_parameters = {
+		auto_target_with_gunner = true,
+		auto_target_without_gunner = true,
+	}
+	local target = lib.get_target(entity)
+	lib.remove_target(target)
+	entity.die()
+end
+
+---@param e EventData|on_entity_destroyed
+local function on_entity_destroyed(e)
+	log(serpent.line(e))
+	if e.unit_number then
+		local entity = global.spidertrons[e.unit_number]
+		lib.remove_spidy(entity)
+		global.spidertrons[e.unit_number] = nil
+	end
 end
 
 script.on_event(defines.events.on_entity_died, on_entity_died, {
@@ -85,3 +133,5 @@ script.on_event(defines.events.on_built_entity, on_built_entity)
 script.on_event(defines.events.on_robot_built_entity, on_built_entity)
 script.on_event(defines.events.on_player_used_capsule, on_player_used_capsule)
 script.on_event(defines.events.on_script_path_request_finished, on_script_path_request_finished)
+script.on_event(defines.events.on_spider_command_completed, on_spider_command_completed)
+script.on_event(defines.events.on_entity_destroyed, on_entity_destroyed)

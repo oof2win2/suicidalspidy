@@ -87,7 +87,7 @@ script.on_event(defines.events.on_gui_click, function (event)
 	local request = entity.surface.request_path{
 		bounding_box = {{0.5, 0.5}, {-0.5, -0.5}},
 		force = entity.force,
-		collision_mask = entity.prototype.collision_mask,
+		collision_mask = {"water-tile"},
 		start = entity.position,
 		goal = target.position,
 		radius = 20,

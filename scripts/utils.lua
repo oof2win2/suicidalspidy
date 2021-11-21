@@ -102,7 +102,7 @@ end
 ---Remove a spidertron from the global table and remove it's target
 ---@param entity LuaEntity
 function lib.remove_spidy(entity)
-	lib.remove_target_owner(entity)
+	lib.remove_target(entity)
 	global.spidertrons[entity.unit_number] = nil
 end
 return lib
