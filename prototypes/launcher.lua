@@ -44,12 +44,11 @@ data:extend{
 		type="artillery-turret",
 		name = "suicidalspidy-launcher",
 		localised_name = {"item-name.suicidalspidy-rocket"},
-		icon = "__suicidalspidy__/graphics/rocket.png",
+		icon = "__base__/graphics/icons/artillery-turret.png",
 		icon_size = 32,
+		icon_mipmaps = 4,
 		flags = {"placeable-neutral", "placeable-player", "player-creation"},
 	  
-		--collision_box = {{-1.45, -1.45}, {1.45, 1.45}},
-		--selection_box = {{-1.5, -1.5}, {1.5, 1.5}},
 		collision_mask = {},
 	  
 		inventory_size = 1,

@@ -23,28 +23,22 @@ local function create_gui(player, entity)
 			has_target=target and true or false
 		}
 	}
-	local button_frame = content_frame.add{type="frame", name="button_frame"}
-	button_frame.add{
-		type="switch",
-		left_label_caption={"suicidalspidy.disarmed"},
-		right_label_caption={"suicidalspidy.armed"},
-		tags={
-			owner=statics.ownertag,
-			unit_number=entity.unit_number,
-			type="armed"
-		}
-	}
-	button_frame.add{
+	content_frame.add{
 		type="button",
 		caption="Path to target",
+		enabled=target and true or false,
 		tags={
 			owner=statics.ownertag,
 			unit_number=entity.unit_number,
-			type="path-to-target"
+			type="path-to-target",
 		}
 	}
 	player_global.elements.main_frame = main_frame
 	player.opened = main_frame
+end
+
+local function set_pathing(entity, target)
+	
 end
 
 ---Toggle the GUI for a player
@@ -82,11 +76,49 @@ script.on_event(defines.events.on_gui_closed, function (event)
 	local player = game.get_player(event.player_index)
 	toggle_gui(player)
 end)
+script.on_event(defines.events.on_gui_click, function (event)
+	local element = event.element
+	if element == nil or element.tags.owner ~= statics.ownertag then return end
+	
+	local spidertron = global.spidertrons[element.tags.unit_number]
+	local entity = spidertron.entity
+	local target = lib.get_target(entity)
+	if not target then return end
+	local request = entity.surface.request_path{
+		bounding_box = {{0.5, 0.5}, {-0.5, -0.5}},
+		force = entity.force,
+		collision_mask = entity.prototype.collision_mask,
+		start = entity.position,
+		goal = target.position,
+		radius = 20,
+		can_open_gates =  true,
+		pathfind_flags = {
+			prefer_straight_paths = true
+		},
+	}
+	global.pathing_requests[request] = {
+		entity = entity,
+		id = request
+	}
+end)
+
+---@class PathingRequest
+---@field entity LuaEntity
+---@field id uint
+
+---@class Spidertron
+---@field target Target
+---@field pathing boolean
+---@field entity LuaEntity
 
 script.on_init(function ()
 	global = {
 		players = {},
+		---@type Target[]
 		spidertron_targets = {},
-		spidertrons = {}
+		---@type Spidertron[]
+		spidertrons = {},
+		---@type PathingRequest
+		pathing_requests = {}
 	}
 end)

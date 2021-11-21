@@ -42,7 +42,6 @@ local function on_entity_died (e)
 	end
 end
 
---TODO: make this handler work properly
 ---@param e EventData|on_player_used_capsule
 local function on_player_used_capsule(e)
 	if e.item.name ~= statics.remote_name then return end
@@ -50,10 +49,30 @@ local function on_player_used_capsule(e)
 		position=e.position
 	})
 
+
 	local spidy = lib.find_free_spidy()
 	if spidy then
 		lib.set_target(spidy, target)
 	end
+end
+
+---@param e EventData|on_script_path_request_finished
+local function on_script_path_request_finished(e)
+	local req = global.pathing_requests[e.id]
+	if not req then return end -- not our path request
+	if not e.path then
+		-- unsuccessful pathing
+		global.pathing_requests[e.id] = nil
+		return
+	end
+
+	-- set the paths
+	for _, waypoint in pairs(e.path) do
+		req.entity.add_autopilot_destination(waypoint.position)
+	end
+
+	-- remove the pathing request from global
+	global.pathing_requests[e.id] = nil
 end
 
 script.on_event(defines.events.on_entity_died, on_entity_died, {
@@ -65,3 +84,4 @@ script.on_event(defines.events.on_entity_died, on_entity_died, {
 script.on_event(defines.events.on_built_entity, on_built_entity)
 script.on_event(defines.events.on_robot_built_entity, on_built_entity)
 script.on_event(defines.events.on_player_used_capsule, on_player_used_capsule)
+script.on_event(defines.events.on_script_path_request_finished, on_script_path_request_finished)

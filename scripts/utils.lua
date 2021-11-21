@@ -1,11 +1,18 @@
 local lib = {}
 
+---@class Target
+---@field claimed boolean
+---@field position Position
+---@field owner_unit_number uint
+
+
 ---Set the target of a spidertron
 ---@param entity LuaEntity
 ---@param position Position
+---@return Target
 function lib.set_target(entity, position)
 	for _, target in pairs(global.spidertron_targets) do
-		if target.position == position then
+		if target.position.x == position.x and target.position.y == position.y then
 			target.claimed = true
 			target.owner_unit_number = entity.unit_number
 			return target
@@ -15,6 +22,7 @@ end
 
 ---Gets or makes the target of a spidertron
 ---@param entity LuaEntity
+---@return Target
 function lib.get_target(entity)
 	for _, existing_target in pairs(global.spidertron_targets) do
 		if existing_target.owner_unit_number == entity.unit_number then
@@ -37,13 +45,20 @@ function lib.get_target(entity)
 	end
 end
 
+---@alias target_param {position: Position}
+---@param target target_param
+---@return Target
 function lib.add_target(target)
-	return table.insert(global.spidertron_targets, {
+	local t = {
 		position=target.position,
 		claimed = false,
 		owner_unit_number = nil,
-	})
+	}
+	table.insert(global.spidertron_targets, t)
+	return t
 end
+
+---@param target Target
 function lib.remove_target(target)
 	for index, existing_target in pairs(global.spidertron_targets) do
 		if existing_target.position == target.position then
@@ -64,6 +79,7 @@ function lib.remove_target_owner(entity)
 end
 
 ---Finds a spidertron that doesn't have any target yet
+---@return LuaEntity|nil
 function lib.find_free_spidy()
 	for _, spidertron in pairs(global.spidertrons) do
 		if not spidertron.target then
@@ -74,11 +90,12 @@ end
 
 ---Create a spidertron
 ---@param entity LuaEntity
----@param target any
+---@param target Target
 function lib.create_spidy(entity, target)
 	global.spidertrons[entity.unit_number] = {
 		target = target or nil,
-		pathing = false
+		pathing = false,
+		entity = entity
 	}
 end
 
